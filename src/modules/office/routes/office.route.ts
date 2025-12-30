@@ -56,5 +56,6 @@ app.get(
   authorize(["admin", "super_admin"]),
   officeController.getWorkers
 );
+app.get("/get", officeController.searchOffices);
 
 export default app;

@@ -423,6 +423,50 @@ class OfficeController {
       errors: {},
     });
   }
+
+  //use auth middleware in this one too admin or office not required in this one so will not use
+  public async searchOffices(req: Request, res: Response) {
+    const { q, page = 1, limit = 10 } = req.query;
+    const search = typeof q === "string" ? q : "";
+    const searchTerm = search ? search.trim() : "";
+    if (!searchTerm) {
+      return res.status(400).json({
+        success: false,
+        active: true,
+        data: {},
+        message: "",
+        error: {
+          message: "query not provided",
+        },
+      });
+    }
+    const pageParsed = parseInt(page as string);
+    const limitParsed = parseInt(limit as string);
+    const query = searchTerm
+      ? { name: { $regex: searchTerm, $options: "i" } }
+      : {};
+    const skip = (pageParsed - 1) * limitParsed;
+    const [offices, total] = await Promise.all([
+      OfficeModel.find(query)
+        .select(["name", "isActive", "workStartTime", "workEndTime"])
+        .skip(skip)
+        .limit(limitParsed),
+      OfficeModel.countDocuments(query),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      active: true,
+      data: {
+        offices,
+        total,
+        page: pageParsed,
+        limit: limitParsed,
+      },
+      message: "Office has been found",
+      errors: {},
+    });
+  }
 }
 
 export default new OfficeController();

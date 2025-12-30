@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import apiRoutes from "./routes";
 import { errorMiddleware } from "./modules/core/middlewares/errormiddleware";
 import { connectDb } from "./modules/core/utils/connectdb";
-
+import cors from "cors";
 //cron jobs
 import "./modules/attendance/cron/attendance.cron";
 import "./modules/attendance/cron/dailyattendance.cron";
@@ -19,6 +19,12 @@ class Server {
   }
   private middleware() {
     dotenv.config();
+    this.app.use(
+      cors({
+        origin: "http://localhost:5173",
+        credentials: true,
+      })
+    );
     this.app.use(cookieParser());
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));

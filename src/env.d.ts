@@ -14,6 +14,7 @@ declare global {
       DATABASE_URL: string;
       COOKIE_SECRET_KEY: string;
       REDIS_URL: string;
+      CLIENT:string
     }
   }
 }

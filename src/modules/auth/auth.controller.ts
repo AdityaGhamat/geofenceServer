@@ -50,6 +50,8 @@ class AuthController {
       id: user._id,
       name: user.name,
       email: user.email,
+      office: user.office,
+      role: user.role,
       authorization: cookie,
     };
     res
@@ -120,9 +122,40 @@ class AuthController {
           id: emailCheck!._id,
           name: emailCheck!.name,
           email: emailCheck!.email,
+          office: emailCheck!.office,
+          role: emailCheck!.role,
           authorization: cookie,
         },
         message: "",
+        error: {},
+      });
+  }
+
+  //use auth middleware
+  public async logOut(req: Request, res: Response) {
+    const { user_id } = req.user;
+    const userCheck = await UserModel.findById(user_id);
+    if (!userCheck) {
+      return res.status(404).json({
+        success: false,
+        active: true,
+        data: {},
+        message: "",
+        error: {
+          message: "User not found",
+        },
+      });
+    }
+    res
+      .clearCookie("Authorization")
+      .status(200)
+      .json({
+        success: true,
+        active: true,
+        data: {
+          name: userCheck!.name,
+        },
+        message: "User has been logged out",
         error: {},
       });
   }
@@ -197,15 +230,18 @@ class AuthController {
     });
   }
 
-  public async getProfile(req: Request, res: Response) {
+  public async getProfileNoCache(req: Request, res: Response) {
     let user_id: any;
     if (!req.query.i) {
       user_id = req.user.user_id;
     } else {
       user_id = req.query.i;
     }
-    const userCheck = await UserModel.findById(user_id);
-    if (!userCheck) {
+    const user = await UserModel.findById(user_id)
+      .select(["name", "email", "role", "_id", "office"])
+      .populate("office", "_id name isActive");
+
+    if (!user) {
       return res.status(404).json({
         success: false,
         active: true,
@@ -216,19 +252,56 @@ class AuthController {
         },
       });
     }
-    const { name, email, role, _id } = userCheck;
     res.status(200).json({
       success: true,
       active: true,
-      data: {
-        _id,
-        name,
-        email,
-        role,
-      },
+      data: user,
       message: "Successfully fetched profile",
       error: {},
     });
+  }
+
+  public async getProfile(req: Request, res: Response) {
+    let user_id: any;
+    if (!req.query.i) {
+      user_id = req.user.user_id;
+    } else {
+      user_id = req.query.i;
+    }
+    const user = await client.get(`profile:${user_id}`);
+    if (user) {
+      return res.status(200).json({
+        success: true,
+        active: true,
+        data: JSON.parse(user),
+        message: "Successfully fetched profile",
+        error: {},
+      });
+    } else {
+      const userCheck = await UserModel.findById(user_id)
+        .select(["name", "email", "role", "_id", "office"])
+        .populate("office", "_id name isActive");
+      if (!userCheck) {
+        return res.status(404).json({
+          success: false,
+          active: true,
+          data: {},
+          message: "",
+          error: {
+            message: "User not found",
+          },
+        });
+      }
+      const key = `profile:${userCheck._id}`;
+      await client.setex(key, 360, JSON.stringify(userCheck));
+      res.status(200).json({
+        success: true,
+        active: true,
+        data: userCheck,
+        message: "Successfully fetched profile",
+        error: {},
+      });
+    }
   }
   public async joinOffice(req: Request, res: Response) {
     const officeId = req.params.oi;

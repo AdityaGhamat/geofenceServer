@@ -10,7 +10,7 @@ export async function authMiddleware(
   const tokenFromHeader = req.headers.authorization as string;
   const token = tokenFromCookie || tokenFromHeader;
   if (!token) {
-    return res.status(404).json({
+    return res.status(401).json({
       success: false,
       active: true,
       data: {},
