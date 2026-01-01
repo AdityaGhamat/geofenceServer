@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import { IOffice } from "../type/office.document";
+import { nanoid } from "nanoid";
 
 const OfficeSchema = new Schema<IOffice>(
   {
@@ -41,6 +42,10 @@ const OfficeSchema = new Schema<IOffice>(
         required: false,
       },
     ],
+    uid: {
+      type: String,
+      default: () => nanoid(10),
+    },
   },
   { timestamps: true }
 );

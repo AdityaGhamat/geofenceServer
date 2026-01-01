@@ -7,6 +7,8 @@ export interface IUser extends Document {
   coordinates: [Number];
   isActive: boolean;
   office: any;
+  uid?: string;
+  image?: string;
 }
 export interface IUserMethods {
   comparePassword(candidatePassword: string): Promise<boolean>;

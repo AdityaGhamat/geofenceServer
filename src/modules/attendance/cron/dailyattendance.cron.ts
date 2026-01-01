@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import { dailyAttendanceAggregationJob } from "../jobs/dailyattendance.job";
 
-cron.schedule("*30 * * * *", async function () {
+cron.schedule("*/30 * * * *", async function () {
   console.log(
     `[${new Date().toISOString()}] Daily aggregation check triggered`
   );

@@ -53,7 +53,7 @@ app.get(
 app.get(
   "/workers",
   authMiddleware,
-  authorize(["admin", "super_admin"]),
+  // authorize(["admin", "super_admin"]),
   officeController.getWorkers
 );
 app.get("/get", officeController.searchOffices);

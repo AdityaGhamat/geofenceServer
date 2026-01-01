@@ -28,7 +28,11 @@ class AuthController {
         },
       });
     }
-    const emailCheck = await UserModel.findOne({ email: userBody.data?.email });
+    const emailCheck = await UserModel.findOne({
+      email: userBody.data?.email,
+    })
+      .select(["name", "email", "role", "_id", "office"])
+      .populate("office", "_id name isActive");
     if (emailCheck) {
       return res.status(404).json({
         success: false,
@@ -46,14 +50,7 @@ class AuthController {
       process.env.COOKIE_SECRET_KEY as string,
       { expiresIn: "15m" }
     );
-    const resData = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      office: user.office,
-      role: user.role,
-      authorization: cookie,
-    };
+
     res
       .status(200)
       .cookie("Authorization", cookie, {
@@ -64,7 +61,7 @@ class AuthController {
       .json({
         success: true,
         active: true,
-        data: resData,
+        data: emailCheck,
         message: "",
         error: {},
       });
@@ -74,7 +71,12 @@ class AuthController {
     if (!userBody.success) {
       return sendZodError(res, userBody.error);
     }
-    const emailCheck = await UserModel.findOne({ email: userBody.data?.email });
+    const emailCheck = await UserModel.findOne({
+      email: userBody.data?.email,
+    })
+      .select(["name", "email", "role", "_id", "office", "password"])
+      .populate("office", "_id name isActive");
+
     if (!emailCheck) {
       return res.status(404).json({
         success: false,
@@ -86,9 +88,10 @@ class AuthController {
         },
       });
     }
-    const passwordCheck = await emailCheck?.comparePassword(
+    const passwordCheck = await emailCheck.comparePassword(
       userBody.data?.password!
     );
+
     if (!passwordCheck) {
       return res.status(404).json({
         success: false,
@@ -96,18 +99,20 @@ class AuthController {
         data: {},
         message: "",
         error: {
-          message:
-            passwordCheck == undefined
-              ? "Password is not found"
-              : "Password is incorrect",
+          message: "Password is incorrect",
         },
       });
     }
     const cookie = jwt.sign(
-      { user_id: emailCheck!._id, email: emailCheck!.email },
+      { user_id: emailCheck._id, email: emailCheck.email },
       process.env.COOKIE_SECRET_KEY as string,
       { expiresIn: "15m" }
     );
+
+    const userResponse = emailCheck.toObject();
+    // @ts-ignore
+    delete userResponse.password;
+
     res
       .status(200)
       .cookie("Authorization", cookie, {
@@ -118,15 +123,8 @@ class AuthController {
       .json({
         success: true,
         active: true,
-        data: {
-          id: emailCheck!._id,
-          name: emailCheck!.name,
-          email: emailCheck!.email,
-          office: emailCheck!.office,
-          role: emailCheck!.role,
-          authorization: cookie,
-        },
-        message: "",
+        data: userResponse,
+        message: "Login successful",
         error: {},
       });
   }
@@ -146,6 +144,7 @@ class AuthController {
         },
       });
     }
+    await client.del(`profile:${userCheck!._id}`);
     res
       .clearCookie("Authorization")
       .status(200)
@@ -280,7 +279,10 @@ class AuthController {
     } else {
       const userCheck = await UserModel.findById(user_id)
         .select(["name", "email", "role", "_id", "office"])
-        .populate("office", "_id name isActive");
+        .populate(
+          "office",
+          "_id name isActive coordinates workingDays workStartTime workEndTime"
+        );
       if (!userCheck) {
         return res.status(404).json({
           success: false,
@@ -351,7 +353,7 @@ class AuthController {
         { $addToSet: { workers: userObjectId } }
       ),
     ]);
-
+    await client.del(`profile:${user!._id}`);
     res.status(200).json({
       success: true,
       active: true,
@@ -411,6 +413,9 @@ class AuthController {
         { $pull: { workers: userObjectId } }
       ),
     ]);
+
+    await client.del(`profile:${user!._id}`);
+
     res.status(200).json({
       success: true,
       active: true,

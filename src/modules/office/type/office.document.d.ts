@@ -9,4 +9,5 @@ export interface IOffice extends Document {
   isActive: boolean;
   workers: any;
   office_admin: any[];
+  uid?: string;
 }
