@@ -24,9 +24,10 @@ export const updateLocationSchema = z.object({
 export const updateWorkingDaysSchema = z.object({
   workingDays: z
     .array(z.number().int().min(1).max(7))
-    .length(7)
+    .min(1, "You must select at least one working day")
+    .max(7, "Cannot have more than 7 days in a week")
     .refine(
-      (days) => new Set(days).size === 7,
+      (days) => new Set(days).size === days.length,
       "All Days should be unique, no duplicates allowed"
     ),
 });

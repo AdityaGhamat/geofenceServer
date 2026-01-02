@@ -1,6 +1,7 @@
 import { Model, Schema, model } from "mongoose";
 import { IUser, IUserMethods } from "../types/auth.document";
 import bcrypt from "bcryptjs";
+import { nanoid } from "zod";
 export type UserModel = Model<IUser, {}, IUserMethods>;
 const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
@@ -34,6 +35,11 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     isActive: {
       type: Boolean,
       default: false,
+      required: false,
+    },
+    uid: {
+      type: String,
+      default: () => nanoid(),
       required: false,
     },
   },

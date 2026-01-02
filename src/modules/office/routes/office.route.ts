@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { authMiddleware } from "../../auth/middlewares/authmiddleware";
-import { adminMiddleware } from "../middlewares/adminmiddleware";
 import officeController from "../office.controller";
 import { authorize } from "../middlewares/authorizeAccess";
 
@@ -11,7 +10,7 @@ app.post("/create-new-office", authMiddleware, officeController.createOffice);
 app.patch(
   "/update-location",
   authMiddleware,
-  authorize(["admin", "super_admin"]),
+  authorize(["super_admin"]),
   officeController.updateLocation
 );
 
@@ -41,7 +40,12 @@ app.patch(
   authorize(["admin", "super_admin"]),
   officeController.UpdateAdmin
 );
-app.patch("/remove-admin", authMiddleware, authorize(["super_admin"]));
+app.patch(
+  "/remove-admin",
+  authMiddleware,
+  authorize(["super_admin"]),
+  officeController.removeAdmin
+);
 
 app.get(
   "/info",

@@ -12,6 +12,7 @@ import OfficeModel from "./document/office.document";
 import UserModel from "../auth/document/auth.document";
 import { Schema, Types } from "mongoose";
 import { sendZodError } from "../core/errors/zodError.errors";
+import client from "../attendance/config/redis.config";
 class OfficeController {
   //authmiddleware & adminmiddlewar
   public async createOffice(req: Request, res: Response) {
@@ -75,32 +76,48 @@ class OfficeController {
     if (!reqBody.success) {
       return sendZodError(res, reqBody.error);
     }
+
     const adminId = req.user.user_id;
     const admin = await UserModel.findById(adminId);
-    const officeId = admin!.office;
-    const updatedOffice = await OfficeModel.findByIdAndUpdate(
-      officeId,
-      {
-        coordinates: reqBody.data?.coordinates,
-      },
-      { new: true }
-    );
-    if (!updatedOffice) {
+
+    if (!admin || !admin.office) {
       return res.status(400).json({
         success: false,
         active: true,
         data: {},
         message: "",
         error: {
-          message: "Failed to update location",
+          message:
+            "You must be assigned to an office to update its coordinates.",
         },
       });
     }
+
+    const updatedOffice = await OfficeModel.findByIdAndUpdate(
+      admin.office,
+      {
+        $set: { coordinates: reqBody.data.coordinates },
+      },
+      { new: true }
+    );
+
+    if (!updatedOffice) {
+      return res.status(404).json({
+        success: false,
+        active: true,
+        data: {},
+        message: "",
+        error: {
+          message: "Office not found.",
+        },
+      });
+    }
+    await client.del(`profile:${adminId}`);
     res.status(200).json({
       success: true,
       active: true,
       data: updatedOffice,
-      message: "Updated location of office",
+      message: "Office coordinates updated successfully",
       error: {},
     });
   }
@@ -132,6 +149,7 @@ class OfficeController {
         },
       });
     }
+    await client.del(`profile:${adminId}`);
     res.status(200).json({
       success: true,
       active: true,
@@ -193,6 +211,9 @@ class OfficeController {
       },
       { new: true }
     );
+
+    await client.del(`profile:${adminId}`);
+
     if (!updatedOffice) {
       return res.status(400).json({
         success: false,
@@ -295,10 +316,10 @@ class OfficeController {
     }
     try {
       const office = await OfficeModel.findOne({
-        _id: new Schema.Types.ObjectId(reqBody.data!.officeId),
-        office_admin: { $in: [new Schema.Types.ObjectId(req.user.user_id)] },
+        _id: new Types.ObjectId(reqBody.data!.officeId),
+        office_admin: { $in: [new Types.ObjectId(req.user.user_id)] },
         workers: {
-          $in: [new Schema.Types.ObjectId(reqBody.data!.new_adminId)],
+          $in: [new Types.ObjectId(reqBody.data!.new_adminId)],
         },
         isActive: true,
       });
