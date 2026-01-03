@@ -35,6 +35,13 @@ app.patch(
 );
 
 app.patch(
+  "/radius",
+  authMiddleware,
+  authorize(["admin", "super_admin"]),
+  officeController.changeRadius
+);
+
+app.patch(
   "/update-admin",
   authMiddleware,
   authorize(["admin", "super_admin"]),

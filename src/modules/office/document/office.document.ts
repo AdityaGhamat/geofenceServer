@@ -46,9 +46,26 @@ const OfficeSchema = new Schema<IOffice>(
       type: String,
       default: () => nanoid(10),
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      required: false,
+    },
   },
   { timestamps: true }
 );
 
+OfficeSchema.pre("save", async function () {
+  if (this.isModified("isDeleted") && this.isDeleted === true) {
+    this.deletedAt = new Date();
+  }
+  if (this.isModified("isDeleted") && this.isDeleted === false) {
+    // @ts-ignore
+    this.deletedAt = undefined;
+  }
+});
 const OfficeModel = model<IOffice>("Office", OfficeSchema);
 export default OfficeModel;

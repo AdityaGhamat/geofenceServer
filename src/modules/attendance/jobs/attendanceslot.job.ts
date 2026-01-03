@@ -21,9 +21,8 @@ async function processOfficeAttendance(office: any) {
   const date = getTodayDate();
   const slots: any[] = [];
 
-  // Use pipeline to get all locations in one go
   const pipeline = client.pipeline();
-  users.forEach((u) => pipeline.get(`location:${office._id}:${u._id}`));
+  users.forEach((u: any) => pipeline.get(`location:${office._id}:${u._id}`));
   const results = await pipeline.exec();
 
   users.forEach((user, index) => {

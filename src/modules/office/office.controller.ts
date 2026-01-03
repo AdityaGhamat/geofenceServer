@@ -10,7 +10,7 @@ import {
 } from "./validation-schema";
 import OfficeModel from "./document/office.document";
 import UserModel from "../auth/document/auth.document";
-import { Schema, Types } from "mongoose";
+import { Types } from "mongoose";
 import { sendZodError } from "../core/errors/zodError.errors";
 import client from "../attendance/config/redis.config";
 class OfficeController {
@@ -230,6 +230,63 @@ class OfficeController {
       active: true,
       data: updatedOffice,
       message: "Updated working times of office",
+      error: {},
+    });
+  }
+
+  public async changeRadius(req: Request, res: Response) {
+    const { rad } = req.query;
+    if (!rad) {
+      return res.status(400).json({
+        success: false,
+        active: true,
+        data: {},
+        message: "",
+        error: {
+          message: "Radius is not provided in query",
+        },
+      });
+    }
+    const { user_id } = req.user;
+    const user = await UserModel.findById(user_id)
+      .select(["_id", "office"])
+      .lean();
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        active: true,
+        data: {},
+        message: "",
+        error: {
+          message: "User not found",
+        },
+      });
+    }
+    const office = await OfficeModel.findById(user?.office);
+    if (!office) {
+      return res.status(404).json({
+        success: false,
+        active: true,
+        data: {},
+        message: "",
+        error: {
+          message: "Office not found",
+        },
+      });
+    }
+    const updatedOffice = await OfficeModel.findByIdAndUpdate(
+      office._id,
+      {
+        geofence_radius: Number(rad),
+      },
+      { new: true }
+    ).select(["_id", "uid", "name"]);
+    await client.del(`profile:${user._id}`);
+    res.status(200).json({
+      success: true,
+      active: true,
+      data: updatedOffice,
+      message: "Updated geofence radius of office",
       error: {},
     });
   }
@@ -464,7 +521,7 @@ class OfficeController {
     const pageParsed = parseInt(page as string);
     const limitParsed = parseInt(limit as string);
     const query = searchTerm
-      ? { name: { $regex: searchTerm, $options: "i" } }
+      ? { name: { $regex: searchTerm, $options: "i" }, isDeleted: false }
       : {};
     const skip = (pageParsed - 1) * limitParsed;
     const [offices, total] = await Promise.all([

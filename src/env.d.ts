@@ -13,8 +13,9 @@ declare global {
       PORT: number;
       DATABASE_URL: string;
       COOKIE_SECRET_KEY: string;
+      COOKIE_REFRESH_SECRET: string;
       REDIS_URL: string;
-      CLIENT:string
+      CLIENT: string;
     }
   }
 }

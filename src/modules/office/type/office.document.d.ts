@@ -10,4 +10,7 @@ export interface IOffice extends Document {
   workers: any;
   office_admin: any[];
   uid?: string;
+  geofence_radius: number;
+  isDeleted: boolean;
+  deletedAt: Date;
 }

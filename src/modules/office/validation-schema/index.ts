@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
 export const createOfficeSchema = z.object({
   name: z
     .string()
@@ -13,8 +15,16 @@ export const createOfficeSchema = z.object({
       message: "workingDays must contain unique days",
     }),
   coordinates: z.array(z.number()),
-  workStartTime: z.string(),
-  workEndTime: z.string(),
+  workStartTime: z
+    .string()
+    .regex(timeRegex, "Invalid format.Use HH:MM (e.g., 09:00 or 17:30)"),
+  workEndTime: z
+    .string()
+    .regex(timeRegex, "Invalid format.Use HH:MM (e.g., 09:00 or 17:30)"),
+  geofence_radius: z
+    .number()
+    .min(10, "minimum 10 meters required")
+    .max(100, "can't exceed 100 meters for now"),
 });
 
 export const updateLocationSchema = z.object({
@@ -32,7 +42,6 @@ export const updateWorkingDaysSchema = z.object({
     ),
 });
 
-const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
 export const updateWorkingTimeSchema = z
   .object({
     workStartTime: z
