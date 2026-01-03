@@ -61,6 +61,8 @@ class OfficeController {
 
     await user!.save();
 
+    await client.del(`profile:${user._id}`);
+
     res.status(202).json({
       success: true,
       active: true,

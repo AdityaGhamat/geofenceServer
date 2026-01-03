@@ -1,7 +1,7 @@
 import { Model, Schema, model } from "mongoose";
 import { IUser, IUserMethods } from "../types/auth.document";
 import bcrypt from "bcryptjs";
-import { nanoid } from "zod";
+import { nanoid } from "nanoid";
 export type UserModel = Model<IUser, {}, IUserMethods>;
 const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
@@ -39,7 +39,7 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
     },
     uid: {
       type: String,
-      default: () => nanoid(),
+      default: () => nanoid(10),
       required: false,
     },
   },
