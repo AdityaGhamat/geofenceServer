@@ -54,6 +54,10 @@ const OfficeSchema = new Schema<IOffice>(
       type: Date,
       required: false,
     },
+    geofence_radius: {
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true }
 );

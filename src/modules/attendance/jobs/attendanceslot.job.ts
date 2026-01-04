@@ -41,7 +41,7 @@ async function processOfficeAttendance(office: any) {
           office.coordinates[0],
           office.coordinates[1]
         );
-        status = distance <= 70 ? "IN" : "OUT";
+        status = distance <= office?.geofence_radius ? "IN" : "OUT";
         console.log(
           `User ${user.name} is ${distance.toFixed(2)}m away -> ${status}`
         );
@@ -88,7 +88,6 @@ export async function markAttendanceJob(force: boolean = false) {
     let processedOffices = 0;
 
     for (const office of offices) {
-      // SKIP CHECKS IF FORCE IS TRUE
       if (!force) {
         if (!office.workingDays || !office.workingDays.includes(todayWeekday)) {
           continue;

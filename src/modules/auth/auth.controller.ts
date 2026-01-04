@@ -317,9 +317,6 @@ class AuthController {
       "EX",
       30 * 60
     );
-    // const updatedUser = await UserModel.findByIdAndUpdate(user_id, {
-    //   coordinates: locationBody.data?.coordinates,
-    // });
     res.status(200).json({
       success: true,
       active: true,
@@ -381,7 +378,7 @@ class AuthController {
         .select(["name", "email", "role", "_id", "office"])
         .populate(
           "office",
-          "_id name isActive coordinates workingDays workStartTime workEndTime"
+          "_id name isActive coordinates workingDays workStartTime workEndTime geofence_radius"
         );
       if (!userCheck) {
         return res.status(404).json({

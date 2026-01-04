@@ -18,15 +18,15 @@ const dailyAttendanceSchema = new Schema<IDailyAttendance>(
       required: true,
     },
     workingMinutes: {
-      type: String,
+      type: Number,
       required: true,
     },
     presentSlots: {
-      type: String,
+      type: Number,
       required: true,
     },
     totalSlots: {
-      type: String,
+      type: Number,
       required: true,
     },
     status: {

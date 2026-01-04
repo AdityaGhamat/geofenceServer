@@ -238,6 +238,7 @@ class OfficeController {
 
   public async changeRadius(req: Request, res: Response) {
     const { rad } = req.query;
+    console.log(`radius : ${rad}`);
     if (!rad) {
       return res.status(400).json({
         success: false,
@@ -246,6 +247,17 @@ class OfficeController {
         message: "",
         error: {
           message: "Radius is not provided in query",
+        },
+      });
+    }
+    if (Number(rad) < 10 || Number(rad) > 100) {
+      return res.status(400).json({
+        success: false,
+        active: true,
+        data: {},
+        message: "",
+        error: {
+          message: "Radius is either less than 10 or greater than 100",
         },
       });
     }
@@ -282,7 +294,8 @@ class OfficeController {
         geofence_radius: Number(rad),
       },
       { new: true }
-    ).select(["_id", "uid", "name"]);
+    ).select(["_id", "uid", "name", "geofence_radius"]);
+    console.log(`updatedOffice : ${updatedOffice}`);
     await client.del(`profile:${user._id}`);
     res.status(200).json({
       success: true,

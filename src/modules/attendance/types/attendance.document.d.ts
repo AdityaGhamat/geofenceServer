@@ -12,8 +12,8 @@ export interface IDailyAttendance extends Document {
   user: any;
   office: any;
   date: string;
-  workingMinutes: string;
-  presentSlots: string;
-  totalSlots: string;
+  workingMinutes: number;
+  presentSlots: number;
+  totalSlots: number;
   status: "PRESENT" | "HALF_PRESENT" | "ABSENT";
 }

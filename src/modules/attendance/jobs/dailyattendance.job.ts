@@ -7,7 +7,7 @@ import {
   getWorkingDayMinutes,
   timeToMinutes,
 } from "../utilities";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 
 export async function aggregateForUser(
   userId: any,
@@ -21,10 +21,10 @@ export async function aggregateForUser(
     office: officeId,
     date,
   }).lean();
-
+  const SLOT_MINUTES = 15;
   const totalSlots = slots.length;
   const presentSlots = slots.filter((s) => s.status === "IN").length;
-  const workingMinutes = presentSlots * 15; // change this 15 later please it is only thing which is stopping it from becoming dynamite
+  const workingMinutes = presentSlots * SLOT_MINUTES;
   const fulldayWorking = getWorkingDayMinutes(officeStartTime, officeEndTime);
   const halfdayWorking = fulldayWorking / 2;
   let status = "ABSENT";
@@ -37,12 +37,12 @@ export async function aggregateForUser(
 
   await DailyAttendanceModel.findOneAndUpdate(
     {
-      user: new mongoose.Types.ObjectId(userId),
+      user: new Types.ObjectId(userId),
       date,
     },
     {
-      user: new mongoose.Types.ObjectId(userId),
-      office: new mongoose.Types.ObjectId(officeId),
+      user: new Types.ObjectId(userId),
+      office: new Types.ObjectId(officeId),
       date,
       workingMinutes,
       presentSlots,
@@ -58,7 +58,7 @@ export async function dailyAttendanceAggregationJob() {
 
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const todayDateString = getTodayDate(); // e.g., "20251222"
+  const todayDateString = getTodayDate();
 
   try {
     const offices = await OfficeModel.find({ isActive: true }).lean();
