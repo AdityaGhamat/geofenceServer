@@ -36,4 +36,4 @@ async function seedAnalyticsData(userIdStr: string, officeIdStr: string) {
   process.exit();
 }
 
-seedAnalyticsData("694ae147f388273d69f57a7b", "694ad68f0b7497ab9786d517");
+seedAnalyticsData("6950b671c9e1482ff54d67c3", "695ab4c5ceb0e57f77df72e2");

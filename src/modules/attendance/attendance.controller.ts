@@ -168,10 +168,15 @@ class AttendanceController {
   //authmiddleware
   public async userDashboard(req: Request, res: Response) {
     try {
-      const userId = new Types.ObjectId(req.user.user_id);
+      let userId;
+      const uid = req.params.uid;
+      if (uid) {
+        userId = new Types.ObjectId(uid);
+      } else {
+        userId = new Types.ObjectId(req.user.user_id);
+      }
       const todayDateStr = getTodayDate();
       const now = new Date();
-
       const dayOfWeek = now.getDay();
       const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
       const weekStart = new Date(now);

@@ -11,7 +11,6 @@ function toMinutes(time: string): number {
 async function processOfficeAttendance(office: any) {
   const users = await UserModel.find({
     office: office._id,
-    isActive: true,
   }).lean();
 
   console.log(`Found ${users.length} active users for office: ${office.name}`);

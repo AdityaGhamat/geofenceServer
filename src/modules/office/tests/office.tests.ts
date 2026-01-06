@@ -10,7 +10,9 @@ async function forceJoinAllTestUsers() {
   await connectDb();
   console.log("connection with database has been established");
 
-  const office = await OfficeModel.findOne({ name: "Thane Tech Hub" });
+  const office = await OfficeModel.findOne({
+    name: "Terna College of Engineering6",
+  });
   if (!office) {
     console.error("Office not found! Make sure the name matches exactly.");
     return;

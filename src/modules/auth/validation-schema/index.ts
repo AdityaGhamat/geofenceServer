@@ -11,3 +11,8 @@ export const loginSchema = z.object({
 export const updateLocationSchema = z.object({
   coordinates: z.array(z.number()).length(2),
 });
+
+export const updatePasswordSchema = z.object({
+  old_password: z.string().min(6).max(20),
+  new_password: z.string().min(6).max(20),
+});

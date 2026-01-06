@@ -5,6 +5,7 @@ import {
   createUserSchema,
   loginSchema,
   updateLocationSchema,
+  updatePasswordSchema,
 } from "./validation-schema";
 import client from "../attendance/config/redis.config";
 import OfficeModel from "../office/document/office.document";
@@ -149,6 +150,63 @@ class AuthController {
         message: "Login successful",
         error: {},
       });
+  }
+
+  //authmiddleware
+  public async updatePassword(req: Request, res: Response) {
+    const userBody = updatePasswordSchema.safeParse(req.body);
+    if (!userBody.success) {
+      return sendZodError(res, userBody.error);
+    }
+    try {
+      const userId = req.user.user_id;
+      const user = await UserModel.findById(userId).select(["_id", "password"]);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          active: true,
+          data: {},
+          message: "",
+          error: {
+            message: "User not found",
+          },
+        });
+      }
+      const comparePassword = await user.comparePassword(
+        userBody.data.old_password
+      );
+      if (!comparePassword) {
+        return res.status(400).json({
+          success: false,
+          active: true,
+          data: {},
+          message: "",
+          error: {
+            message: "Password does not match",
+          },
+        });
+      }
+      user.password = userBody.data.new_password;
+      await user.save();
+      await client.del(`profile:${user._id}`);
+      res.status(200).json({
+        success: true,
+        active: true,
+        data: {},
+        message: "Successfully updated the password",
+        error: {},
+      });
+    } catch (error: any) {
+      return res.status(400).json({
+        success: false,
+        active: true,
+        data: {},
+        message: "",
+        error: {
+          message: `${error.message}`,
+        },
+      });
+    }
   }
 
   public async refresh(req: Request, res: Response) {

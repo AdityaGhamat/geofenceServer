@@ -19,9 +19,21 @@ class Server {
   }
   private middleware() {
     dotenv.config();
+    const allowedOrigins = [
+      "http://localhost:5173",
+      process.env.FRONTEND_URL,
+    ].filter(Boolean);
     this.app.use(
       cors({
-        origin: "http://localhost:5173",
+        origin: (origin, callback) => {
+          if (!origin) return callback(null, true);
+          if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+          } else {
+            console.log("Blocked by CORS:", origin);
+            callback(new Error("Not allowed by CORS"));
+          }
+        },
         credentials: true,
       })
     );
